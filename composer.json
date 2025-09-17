@@ -19,7 +19,12 @@
     },
     "autoload": {
         "psr-4": {
-            "RubikaPhp\\": "./"
+            "RubikaPhp\\": "./",
+            "RubikaPhp\\Core\\": "./",
+            "RubikaPhp\\Api\\": "./",
+            "RubikaPhp\\Enums\\": "./",
+            "RubikaPhp\\Filters\\": "./",
+            "RubikaPhp\\Models\\": "./"
         }
     },
     "minimum-stability": "stable",
