@@ -57,7 +57,7 @@ class Bot extends Parameters
             $this->handleUpdate($data['update']);
             return;
         }
-        
+
         if (php_sapi_name() !== 'cli') return;
 
         $offset = null;
@@ -102,7 +102,7 @@ class Bot extends Parameters
             "chat_id" => $this->chatId,
             "text" => $this->text
         ];
-
+        
         if ($this->inline_keypad) $data["inline_keypad"] = $this->inline_keypad;
         if ($this->chat_keypad && $this->chat_keypad_type) {
             $data["chat_keypad"] = $this->chat_keypad;
@@ -122,10 +122,6 @@ class Bot extends Parameters
 
         if (!$this->file_path && !$this->file_id) {
             throw new \InvalidArgumentException("file path or file_id is required");
-        }
-
-        if (!file_exists($this->file_path) && $this->file_path) {
-            throw new \InvalidArgumentException("File not found: {$this->file_path}");
         }
 
         if (!isset($this->file_id)) {

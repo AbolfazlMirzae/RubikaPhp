@@ -512,19 +512,131 @@ class Update extends Parameters {
     public function reply() {
         $_reply = function (Bot $bot, Update $update) {
             $data = [
-                "chat_id" => $update->chat_id,
+                "chat_id" => $this->chatId ?? $update->chat_id,
                 "text" => $this->text,
-                "reply_to_message_id" => $update->new_message?->message_id ?? $update->updated_message?->message_id
+                "reply_to_message_id" => $this->message_id ?? $update->new_message->message_id ?? $update->updated_message->message_id
             ];
-            if ($this->inline_keypad) {
-                $data["inline_keypad"] = (array)$this->inline_keypad;
-            }
+            
+            if ($this->inline_keypad) $data["inline_keypad"] = $this->inline_keypad;
             if ($this->chat_keypad && $this->chat_keypad_type) {
-                $data["chat_keypad"] = (array)$this->chat_keypad;
+                $data["chat_keypad"] = $this->chat_keypad;
                 $data["chat_keypad_type"] = $this->chat_keypad_type;
             }
-            parent::resetAll();
+            if ($this->disable_notification) $data["disable_notification"] = $this->disable_notification;
+    
             return $bot->api->request("sendMessage", $data);
+        };
+        return $_reply($this->bot, $this);
+    }
+
+    public function replyFile() {
+        $_reply = function (Bot $bot, Update $update) {
+            if (!$this->file_path && !$this->file_id) {
+                throw new \InvalidArgumentException("file path or file_id is required");
+            }
+    
+            if (!isset($this->file_id)) {
+                $mime_type = mime_content_type($this->file_path);
+                $file_type = $bot->api->detectFileType($mime_type);
+                $upload_url = $bot->api->requestSendFile($file_type);
+                $file_id = $bot->api->uploadFileToUrl($upload_url, $this->file_path);
+            } else {
+                $file_type = $this->file_type ?? 'Image';
+                $file_id = $this->file_id ?? null;
+            }
+    
+            $params = [
+                'chat_id' => $this->chatId ?? $update->chat_id,
+                'reply_to_message_id' => $this->message_id ?? $update->new_message->message_id ?? $update->updated_message->message_id,
+                'file_id' => $file_id,
+                'type' => $file_type,
+            ];
+    
+            if ($this->text) $params['text'] = $this->text;
+            if ($this->chat_keypad) {
+                $params['chat_keypad'] = $this->chat_keypad;
+                $params['chat_keypad_type'] = $this->chat_keypad_type;
+            }
+    
+            if ($this->inline_keypad) $params['inline_keypad'] = $this->inline_keypad;
+    
+            if ($this->disable_notification) $params['disable_notification'] = $this->disable_notification;
+    
+            $res = $bot->api->request('sendFile', $params);
+            $this->resetAll();
+    
+            return ['api' => $res, 'file_id' => $file_id, 'type' => $file_type];
+        };
+        return $_reply($this->bot, $this);
+    }
+
+    public function replyPoll() {
+        $_reply = function (Bot $bot, Update $update) {
+            $data = [
+                "chat_id" => $this->chatId ?? $update->chat_id,
+                "question" => $this->question,
+                "options" => $this->options,
+                "reply_to_message_id" => $this->message_id ?? $update->new_message->message_id ?? $update->updated_message->message_id
+            ];
+            
+            if ($this->disable_notification) $data["disable_notification"] = $this->disable_notification;
+    
+            return $bot->api->request("sendPoll", $data);
+        };
+        return $_reply($this->bot, $this);
+    }
+
+    public function replyLocation() {
+        $_reply = function (Bot $bot, Update $update) {
+            $data = [
+                "chat_id" => $this->chatId ?? $update->chat_id,
+                "latitude" => $this->latitude,
+                "longitude" => $this->longitude,
+                "reply_to_message_id" => $this->message_id ?? $update->new_message->message_id ?? $update->updated_message->message_id
+            ];
+            
+            if ($this->inline_keypad) $data["inline_keypad"] = $this->inline_keypad;
+            if ($this->chat_keypad && $this->chat_keypad_type) {
+                $data["chat_keypad"] = $this->chat_keypad;
+                $data["chat_keypad_type"] = $this->chat_keypad_type;
+            }
+            if ($this->disable_notification) $data["disable_notification"] = $this->disable_notification;
+    
+            return $bot->api->request("sendLocation", $data);
+        };
+        return $_reply($this->bot, $this);
+    }
+
+    public function replyContact() {
+        $_reply = function (Bot $bot, Update $update) {
+            $data = [
+                "chat_id" => $this->chatId ?? $update->chat_id,
+                "first_name" => $this->first_name,
+                "phone_number" => $this->phone_number,
+                "last_name" => $this->last_name,
+                "reply_to_message_id" => $this->message_id ?? $update->new_message->message_id ?? $update->updated_message->message_id
+            ];
+            
+            if ($this->inline_keypad) $data["inline_keypad"] = $this->inline_keypad;
+            if ($this->chat_keypad && $this->chat_keypad_type) {
+                $data["chat_keypad"] = $this->chat_keypad;
+                $data["chat_keypad_type"] = $this->chat_keypad_type;
+            }
+            if ($this->disable_notification) $data["disable_notification"] = $this->disable_notification;
+    
+            return $bot->api->request("sendContact", $data);
+        };
+        return $_reply($this->bot, $this);
+    }
+
+    public function delete() {
+        $_reply = function (Bot $bot, Update $update) {
+            $data = [
+                "chat_id" => $this->chatId ?? $update->chat_id,
+                "message_id" => $this->message_id ?? $update->new_message->message_id ?? $update->updated_message->message_id
+            ];
+            echo $data['chat_id'] . "\n" . $data['message_id']."\n";
+            return $bot->api->request("deleteMessage", $data);
         };
         return $_reply($this->bot, $this);
     }
