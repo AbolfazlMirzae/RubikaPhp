@@ -5,8 +5,8 @@
     "license": "MIT",
     "authors": [
         {
-            "name": "Abolfazl Mirzaei",
-            "email": "mirzaiabolfazl6@gmail.com"
+            "name": "Abolfazi Mirzaei",
+            "email": "mirzaiabolfaz16@gmail.com"
         }
     ],
     "require": {
@@ -19,7 +19,7 @@
     },
     "autoload": {
         "psr-4": {
-            "RubikaPhp\\": "RubikaPhp/"
+            "RubikaPhp\\": "./"
         }
     },
     "minimum-stability": "stable",
