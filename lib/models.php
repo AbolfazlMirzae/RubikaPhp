@@ -84,7 +84,7 @@ class Parameters {
         return $this;
     }
     
-    public function chatKeypad(Keypad $chatKeypad, ?ChatKeypadTypeEnum $chat_keypad_type = ChatKeypadTypeEnum::NEW): static {
+    public function chatKeypad(?Keypad $chatKeypad = null, ?ChatKeypadTypeEnum $chat_keypad_type = ChatKeypadTypeEnum::NEW): static {
         $this->chat_keypad = $chatKeypad;
         $this->chat_keypad_type = $chat_keypad_type->value;
         return $this;
@@ -355,12 +355,30 @@ class Button {
         $this->id = $id;
         $this->type = $type;
         $this->button_text = $button_text;
-        $this->button_selection = $button_selection;
-        $this->button_calendar = $button_calendar;
-        $this->button_number_picker = $button_number_picker;
-        $this->button_string_picker = $button_string_picker;
-        $this->button_location = $button_location;
-        $this->button_textbox = $button_textbox;
+        
+        if (isset($button_selection)) {
+            $this->button_selection = $button_selection;
+        }
+        
+        if (isset($button_calendar)) {
+            $this->button_calendar = $button_calendar;
+        }
+        
+        if (isset($button_number_picker)) {
+            $this->button_number_picker = $button_number_picker;
+        }
+        
+        if (isset($button_string_picker)) {
+            $this->button_string_picker = $button_string_picker;
+        }
+        
+        if (isset($button_location)) {
+            $this->button_location = $button_location;
+        }
+        
+        if (isset($button_textbox)) {
+            $this->button_textbox = $button_textbox;
+        }
     }
 }
 

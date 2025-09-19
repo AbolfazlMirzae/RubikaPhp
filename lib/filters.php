@@ -31,6 +31,10 @@ class Filters {
         });
     }
 
+    public static function where(string $str1, string $str2): Filters {
+        return new Filters(fn() => $str1 == $str2);
+    }
+    
     public static function any(): Filters {
         return new Filters(fn(Update $update) => true);
     }
@@ -38,14 +42,14 @@ class Filters {
     public static function text(?string $expected = null): Filters {
         return new Filters(function(Update $update) use ($expected) {
             return $update->new_message?->text !== null &&
-                ($expected === null || $update->new_message->text === $expected || str_starts_with(trim($update->new_message->text), $expected));
+                ($expected === null || ($update->new_message?->text ?? $update->updated_message?->text) === $expected || str_starts_with(trim($update->new_message?->text ?? $update->updated_message?->text), $expected));
         });
     }
 
     public static function command(string $cmd): Filters {
         return new Filters(function(Update $update) use ($cmd) {
-            return $update->new_message?->text !== null &&
-                str_starts_with(trim($update->new_message->text), "/$cmd");
+            return ($update->new_message?->text ?? $update->updated_message?->text) !== null &&
+                str_starts_with(trim($update->new_message?->text ?? $update->updated_message?->text), "/$cmd");
         });
     }
 
@@ -54,31 +58,31 @@ class Filters {
     }
 
     public static function isForwarded(): Filters {
-        return new Filters(fn(Update $update) => $update->new_message?->forwarded_from !== null);
+        return new Filters(fn(Update $update) => ($update->new_message?->forwarded_from ?? $update->updated_message?->forwarded_from) !== null);
     }
 
     public static function hasContact(): Filters {
-        return new Filters(fn(Update $update) => $update->new_message?->contact_message !== null);
+        return new Filters(fn(Update $update) => ($update->new_message?->contact_message ?? $update->updated_message?->contact_message) !== null);
     }
 
     public static function isReply(): Filters {
-        return new Filters(fn(Update $update) => $update->new_message?->reply_to_message_id !== null);
+        return new Filters(fn(Update $update) => ($update->new_message?->reply_to_message_id ?? $update->updated_message?->reply_to_message_id) !== null);
     }
 
     public static function hasFile(): Filters {
-        return new Filters(fn(Update $update) => $update->new_message?->file !== null);
+        return new Filters(fn(Update $update) => ($update->new_message?->file ?? $update->updated_message?->file) !== null);
     }
 
     public static function hasSticker(): Filters {
-        return new Filters(fn(Update $update) => $update->new_message?->sticker !== null);
+        return new Filters(fn(Update $update) => ($update->new_message?->sticker ?? $update->updated_message?->sticker) !== null);
     }
 
     public static function hasLocation(): Filters {
-        return new Filters(fn(Update $update) => $update->new_message?->location !== null);
+        return new Filters(fn(Update $update) => ($update->new_message?->location ?? $update->updated_message?->location) !== null);
     }
 
     public static function hasPoll(): Filters {
-        return new Filters(fn(Update $update) => $update->new_message?->poll !== null);
+        return new Filters(fn(Update $update) => ($update->new_message?->poll ?? $update->updated_message?->poll) !== null);
     }
 
     public static function hasLiveLocation(): Filters {
@@ -98,7 +102,7 @@ class Filters {
     }
 
     public static function user(string $userId): Filters {
-        return new Filters(fn(Update $update) => $update->new_message?->sender_id === $userId);
+        return new Filters(fn(Update $update) => ($update->new_message?->sender_type ?? $update->updated_message?->sender_type) === $userId);
     }
 
     public static function isBot(): Filters {
@@ -122,5 +126,9 @@ class Filters {
             ($len = strlen($update->new_message?->text ?? "")) >= $min &&
             ($max === null || $len <= $max)
         );
+    }
+
+    public static function custom(callable $func): Filters {
+        return new Filters($func);
     }
 }

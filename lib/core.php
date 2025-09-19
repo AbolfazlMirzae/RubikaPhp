@@ -19,11 +19,14 @@ class Bot extends Parameters
     public RubikaAPI $api;
     private array $handlers = [];
     private string $token;
+    private string $tokenHash;
+    private bool $stopped = false;
 
     public function __construct(string $token)
     {
         $this->api = new RubikaAPI($token);
         $this->token = $token;
+        $this->tokenHash = hash('sha256', $token.'RubikaPhp');
     }
 
     public function onUpdate(Filters $filter, callable $func)
@@ -37,6 +40,8 @@ class Bot extends Parameters
     private function handleUpdate(array $upd): void
     {
         foreach ($this->handlers as $handler) {
+            if ($this->stopped) break;
+
             $update = Update::fromArray($upd);
             $update->setBot($this);
             $filter = $handler["filter"];
@@ -53,6 +58,7 @@ class Bot extends Parameters
     private function runOn(): void
     {
         if (isset($_SERVER['REQUEST_METHOD']) && $_SERVER['REQUEST_METHOD'] === 'POST') {
+            $this->stopped = false;
             $data = json_decode(file_get_contents('php://input'), true);
             $this->handleUpdate($data['update']);
             return;
@@ -61,14 +67,16 @@ class Bot extends Parameters
         if (php_sapi_name() !== 'cli') return;
 
         $offset = null;
-
+        if (file_exists($this->tokenHash.'.txt')) $offset = file_get_contents($this->tokenHash.'.txt');
         while (true) {
             try {
+                $this->stopped = false;
                 $response = $this->getUpdates(100, $offset);
                 $updates = $response["updates"] ?? [];
 
                 if (!empty($response["next_offset_id"])) {
                     $offset = $response["next_offset_id"];
+                    file_put_contents($this->tokenHash.'.txt', $offset);
                 }
 
                 foreach ($updates as $upd) {
@@ -89,6 +97,10 @@ class Bot extends Parameters
         $fin->start();
     }
 
+    public function stopPropagation() {
+        $this->stopped = true;
+    }
+
     public function getMe(): BotInfo
     {
         $data = $this->api->request("getMe");
@@ -104,10 +116,8 @@ class Bot extends Parameters
         ];
         
         if ($this->inline_keypad) $data["inline_keypad"] = $this->inline_keypad;
-        if ($this->chat_keypad && $this->chat_keypad_type) {
-            $data["chat_keypad"] = $this->chat_keypad;
-            $data["chat_keypad_type"] = $this->chat_keypad_type;
-        }
+        $data["chat_keypad"] = $this->chat_keypad;
+        if ($this->chat_keypad_type) $data["chat_keypad_type"] = $this->chat_keypad_type;
         if ($this->message_id) $data["reply_to_message_id"] = $this->message_id;
         if ($this->disable_notification) $data["disable_notification"] = $this->disable_notification;
 
@@ -148,10 +158,8 @@ class Bot extends Parameters
             $params['text'] = $this->text;
         }
 
-        if ($this->chat_keypad) {
-            $params['chat_keypad'] = $this->chat_keypad;
-            $params['chat_keypad_type'] = $this->chat_keypad_type;
-        }
+        $params["chat_keypad"] = $this->chat_keypad;
+        if ($this->chat_keypad_type) $params["chat_keypad_type"] = $this->chat_keypad_type;
 
         if ($this->inline_keypad) {
             $params['inline_keypad'] = $this->inline_keypad;
