@@ -1,5 +1,12 @@
 <?php
 namespace RubikaPhp\Api;
+
+require 'vendor/autoload.php';
+
+use GuzzleHttp\Client;
+use GuzzleHttp\Exception\RequestException;
+use GuzzleHttp\Psr7\Request;
+
 class RubikaAPIError extends \InvalidArgumentException {}
 class RubikaNetworkError extends \InvalidArgumentException {}
 
@@ -7,10 +14,16 @@ class RubikaAPI {
     private string $token;
     private int $timeout;
     private string $baseUrl = "https://botapi.rubika.ir/v3";
+    private Client $client;
 
     public function __construct(string $token, int $timeout = 60) {
         $this->token = $token;
         $this->timeout = $timeout;
+
+        $this->client = new Client([
+            'base_uri' => "{$this->baseUrl}/{$this->token}/",
+            'timeout'  => $this->timeout,
+        ]);
     }
 
     private function url(string $method): string {
@@ -18,84 +31,76 @@ class RubikaAPI {
     }
 
     public function request(string $method, ?array $data = null): array {
-        $url = $this->url($method);
+        try {
+            $options = [];
+            if (!empty($data)) {
+                $options['json'] = $data;
+            }
 
-        $ch = curl_init($url);
-        curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
-        curl_setopt($ch, CURLOPT_TIMEOUT, $this->timeout);
-        curl_setopt($ch, CURLOPT_POST, true);
-        curl_setopt($ch, CURLOPT_HTTPHEADER, [
-            "Content-Type: application/json"
-        ]);
-        if (!empty($data)) {
-            curl_setopt($ch, CURLOPT_POSTFIELDS, json_encode($data));
+            $response = $this->client->post($method, $options);
+            $statusCode = $response->getStatusCode();
+            $body = (string) $response->getBody();
+            $result = json_decode($body, true);
+
+            if ($statusCode !== 200) {
+                throw new RubikaAPIError("Bad response: $body", $statusCode);
+            }
+
+            if (!isset($result['status']) || $result['status'] !== 'OK') {
+                throw new RubikaAPIError("Rubika API Error: " . json_encode($result), $statusCode);
+            }
+
+            return $result['data'] ?? [];
+
+        } catch (RequestException $e) {
+            throw new RubikaNetworkError("Network error: " . $e->getMessage());
         }
-        
-        $response = curl_exec($ch);
-
-        if ($response === false) {
-            $error = curl_error($ch);
-            curl_close($ch);
-            throw new RubikaNetworkError("Network error: $error");
-        }
-
-        $httpCode = curl_getinfo($ch, CURLINFO_HTTP_CODE);
-        curl_close($ch);
-
-        if ($httpCode !== 200) {
-            throw new RubikaAPIError("Bad response: $response", $httpCode);
-        }
-
-        $result = json_decode($response, true);
-
-        if (!isset($result["status"]) || $result["status"] !== "OK") {
-            throw new RubikaAPIError("Rubika API Error: " . json_encode($result), $httpCode);
-        }
-
-        return $result["data"] ?? [];
     }
-    public function uploadFileToUrl(string $url, string $file_path): string
-    {
+
+    public function uploadFileToUrl(string $url, string $file_path): string {
         $mime_type = mime_content_type($file_path);
         $filename = basename($file_path);
-        $curl_file = new \CURLFile($file_path, $mime_type, $filename);
 
-        $ch = curl_init();
-        curl_setopt_array($ch, [
-            CURLOPT_URL => $url,
-            CURLOPT_RETURNTRANSFER => true,
-            CURLOPT_POST => true,
-            CURLOPT_POSTFIELDS => ['file' => $curl_file],
-            CURLOPT_HTTPHEADER => ['Content-Type: multipart/form-data'],
-            CURLOPT_TIMEOUT => 240,
-        ]);
-        $response = curl_exec($ch);
-        $http_code = curl_getinfo($ch, CURLINFO_HTTP_CODE);
-        curl_close($ch);
+        try {
+            $response = $this->client->post($url, [
+                'multipart' => [
+                    [
+                        'name'     => 'file',
+                        'contents' => fopen($file_path, 'r'),
+                        'filename' => $filename,
+                        'headers'  => ['Content-Type' => $mime_type],
+                    ]
+                ],
+                'timeout' => 240,
+            ]);
 
-        $data = json_decode($response, true);
-        if ($http_code !== 200 || !is_array($data)) {
-            throw new \RuntimeException("Upload failed: HTTP $http_code - " . ($response ?: 'No response'));
+            $data = json_decode((string)$response->getBody(), true);
+            if (!isset($data['data']['file_id'])) {
+                throw new \RuntimeException("No file_id returned from upload: " . json_encode($data));
+            }
+
+            return $data['data']['file_id'];
+
+        } catch (RequestException $e) {
+            $status = $e->hasResponse() ? $e->getResponse()->getStatusCode() : 'N/A';
+            throw new \RuntimeException("Upload failed: HTTP $status - " . $e->getMessage());
         }
-        if (!isset($data['data']['file_id'])) {
-            throw new \RuntimeException("No file_id returned from upload: " . json_encode($data));
-        }
-        return $data['data']['file_id'];
     }
-    public function requestSendFile(string $type): string
-    {
+
+    public function requestSendFile(string $type): string {
         $validTypes = ['File', 'Image', 'Voice', 'Music', 'Gif', 'Video'];
         if (!in_array($type, $validTypes)) {
             throw new \InvalidArgumentException("Invalid file type: {$type}");
         }
+
         $response = $this->request('requestSendFile', ['type' => $type]);
         if (empty($response['upload_url'])) {
             throw new \RuntimeException("No upload_url returned: " . json_encode($response));
         }
         return $response['upload_url'];
     }
-    public function detectFileType(string $mime_type): string
-    {
+
+    public function detectFileType(string $mime_type): string {
         $map = [
             'image/jpeg' => 'Image',
             'image/png' => 'Image',
@@ -110,6 +115,7 @@ class RubikaAPI {
             'application/zip' => 'File',
             'application/x-rar-compressed' => 'File',
         ];
+
         return $map[strtolower($mime_type)] ?? 'File';
     }
 }
