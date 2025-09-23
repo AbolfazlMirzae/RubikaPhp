@@ -60,10 +60,11 @@ class Bot extends Parameters
         if (isset($_SERVER['REQUEST_METHOD']) && $_SERVER['REQUEST_METHOD'] === 'POST') {
             $this->stopped = false;
             $data = json_decode(file_get_contents('php://input'), true);
+            
             $this->handleUpdate(
                 is_array($data) && isset($data['update'])
                     ? $data['update']
-                    : ($data ?? [])
+                    : $data
             );
             return;
         }

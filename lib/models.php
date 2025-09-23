@@ -481,8 +481,8 @@ class Message {
 }
 
 class Update extends Parameters {
-    public UpdateTypeEnum $type;
-    public string $chat_id;
+    public ?UpdateTypeEnum $type;
+    public ?string $chat_id;
     public ?Message $new_message;
     public ?Message $updated_message;
     public ?Message $inline_message;
@@ -491,8 +491,8 @@ class Update extends Parameters {
     public Bot $bot;
 
     public function __construct(
-        UpdateTypeEnum $type,
-        string $chat_id,
+        ?UpdateTypeEnum $type = null,
+        ?string $chat_id = null,
         ?Message $new_message = null,
         ?Message $updated_message = null,
         ?Message $inline_message = null,
@@ -517,8 +517,8 @@ class Update extends Parameters {
             $message = Message::fromArray($data["new_message"]);
         }
         return new Update(
-            UpdateTypeEnum::from($data["type"]),
-            $data["chat_id"] ?? "",
+            UpdateTypeEnum::from($data["type"] ?? null),
+            $data["chat_id"] ?? $data["inline_message"]["chat_id"] ?? null,
             $message,
             isset($data["updated_message"]) ? Message::fromArray($data["updated_message"]) : null,
             isset($data["inline_message"]) ? Message::fromArray($data["inline_message"]) : null,
