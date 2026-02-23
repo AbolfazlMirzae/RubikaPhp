@@ -206,7 +206,6 @@ Current status: **80/80 tests passing** ✅
 
 ### Updates
 - `getUpdates()` - Long polling
-- `getChannelUpdates()` - Channel updates
 - `run()` - Start bot (polling or webhook)
 
 ## Requirements
