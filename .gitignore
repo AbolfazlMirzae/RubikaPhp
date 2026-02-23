@@ -1,0 +1,33 @@
+# Dependencies
+vendor/
+composer.lock
+
+# IDEs
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+.DS_Store
+
+# PHP
+*.log
+.php_cs.cache
+
+# Tests
+.phpunit.result.cache
+coverage/
+.coverage/
+
+# Environment
+.env
+.env.local
+.env.*.local
+
+# Temporary files
+*.tmp
+.temp/
+build/
+
+# Bot token cache
+*.txt

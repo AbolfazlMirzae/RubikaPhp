@@ -1,7 +1,3 @@
 <?php
-require_once('core.php');
-require_once('enums.php');
-require_once('filters.php');
-require_once('models.php');
-require_once('utils.php');
-require_once('model_button.php');
+// Autoload the RubikaPhp library
+require_once(__DIR__ . '/../vendor/autoload.php');

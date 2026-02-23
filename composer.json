@@ -12,19 +12,26 @@
     "require": {
         "php": ">=8.0",
         "ext-curl": "*",
-        "ext-json": "*"
+        "ext-json": "*",
+        "guzzlehttp/guzzle": "^7.0"
     },
     "require-dev": {
         "phpunit/phpunit": "^9.0"
     },
     "autoload": {
         "psr-4": {
-            "RubikaPhp\\": "./",
-            "RubikaPhp\\Core\\": "./",
-            "RubikaPhp\\Api\\": "./",
-            "RubikaPhp\\Enums\\": "./",
-            "RubikaPhp\\Filters\\": "./",
-            "RubikaPhp\\Models\\": "./"
+            "RubikaPhp\\": "lib/"
+        },
+        "classmap": [
+            "lib/Models/Models.php",
+            "lib/Models/Button.php",
+            "lib/Exceptions/Exceptions.php",
+            "lib/Enums/Enums.php"
+        ]
+    },
+    "autoload-dev": {
+        "psr-4": {
+            "RubikaPhp\\Tests\\": "tests/"
         }
     },
     "minimum-stability": "stable",
