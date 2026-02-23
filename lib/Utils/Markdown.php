@@ -112,8 +112,7 @@ class Markdown
         if ($ord0 >= 240 && $ord0 <= 247) return ($ord0-240)*262144 + (ord($c[1])-128)*4096 + (ord($c[2])-128)*64 + (ord($c[3])-128);
         return null;
     }
-
-    // --- تابع اصلی برای متادیتا ---
+    
     public function toMetadata(string $text): array
     {
         $meta_data_parts = [];
@@ -213,7 +212,6 @@ class Markdown
     }
 }
 
-// --- استفاده ---
 $md = new Markdown();
 
 $html = "<b>Bold</b> and <i>Italic</i> text with a <a href='https://example.com'>link</a> and a <pre>PHP Code</pre>";
