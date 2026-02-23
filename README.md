@@ -14,13 +14,7 @@ A complete PHP SDK for building bots on **Rubika Messenger** using the official 
 ✅ **Well Tested** - 100+ unit tests with 100% pass rate  
 ✅ **PSR-4 Compliant** - Modern autoloading  
 
-## Installation
-
-```bash
-composer require AbolfazlMirzae/RubikaPhp
-```
-
-Or clone the repository:
+##installation:
 
 ```bash
 git clone https://github.com/AbolfazlMirzae/RubikaPhp.git
