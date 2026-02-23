@@ -36,39 +36,13 @@
 - Default location support
 - Properties: `type`, `title`, `default_pointer_location`, `default_map_location`
 
-### 3. **Media File Methods** ✅
-
-#### `sendSticker()`
-- Send sticker messages
-- Requires: `fileId()`
-
-#### `sendVoice()`
-- Send voice/audio messages
-- Supports file upload or file_id
-- Optional text caption
-
-#### `sendMusic()`
-- Send music files
-- Similar to voice but for music media
-- Supports metadata
-
-### 4. **Group/Channel Management Methods** ✅
+### 3. **Group/Channel Management Methods** ✅
 
 #### User Management
 - `banUser(chatId, userId)` - Ban user from group
 - `unbanUser(chatId, userId)` - Remove ban
-- `kickUser(chatId, userId)` - Remove user from group
-- `muteUserFromGroup(chatId, userId)` - Mute user
-- `unmuteUserFromGroup(chatId, userId)` - Unmute user
 
-### 5. **Parameter Builder Enhancements** ✅
-
-New chainable methods:
-- `userId(userId)` - Set user ID for operations
-- `title(title)` - Set title for chat operations
-- `description(description)` - Set description
-
-### 6. **Test Coverage** ✅
+### 4. **Test Coverage** ✅
 
 Total: **80 Unit Tests** across 6 test classes:
 - `ParametersTest` - 15 tests
@@ -105,20 +79,10 @@ $location = new ButtonLocation(
 );
 ```
 
-### Send Voice Message
-```php
-$bot->chatId('c123456')
-    ->filePath('/path/to/voice.mp3')
-    ->text('Check this voice message')
-    ->sendVoice();
-```
-
 ### Group Management
 ```php
 $bot->banUser('group_123', 'user_456');
-$bot->kickUser('group_123', 'user_789');
-$members = $bot->getChatMembers('group_123');
-$bot->editChatTitle('group_123', 'New Group Name');
+$bot->unbanUser('group_123', 'user_456');
 ```
 
 ## API Endpoints Implemented
@@ -128,14 +92,14 @@ $bot->editChatTitle('group_123', 'New Group Name');
 - Message Editing: editMessageText, editMessageKeypad, deleteMessage
 - Info Methods: getMe, getChat
 - Group: banUser, unbanUser
-- Updates: getUpdates, getChannelUpdates
+- Updates: getUpdates
 - Bot Config: setCommands, setEndpoint, updateBotEndpoints
 - Forward: forwardMessage
 - Keypad: editChatKeypad, chatKeypad
 
 ## Models Updated
 
-- **Chat** - Group/channel information
+- **Chat** - Chat information
 - **Message** - Full message data with all attachment types
 - **Update** - Webhook update handling
 - **InlineMessage** - NEW: Inline button interactions
@@ -143,8 +107,6 @@ $bot->editChatTitle('group_123', 'New Group Name');
 - **Files** - File, Location, Sticker, ContactMessage, Poll, etc.
 
 ## 📝 Text Formatting - Markdown Support (v2.1.0)
-
-Markdown formatting functions ported from **Rubpy** Python SDK.
 
 ```php
 use RubikaPhp\Core\Bot;
