@@ -104,6 +104,8 @@ class Bot extends Parameters
         $metadata_to_send = null;
         $text_to_send = $text;
 
+        
+
         if ($this->parse_mode && strtolower($this->parse_mode) === 'markdown' && $text) {
             $mark = new Markdown();
             $md = $mark->toMetadata($text);
@@ -124,6 +126,8 @@ class Bot extends Parameters
         } elseif ($metadata_to_send !== null) {
             $params['metadata'] = $metadata_to_send;
         }
+
+        $this->parse_mode = null;
 
         return $params;
     }

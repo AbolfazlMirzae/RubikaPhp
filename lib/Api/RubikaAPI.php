@@ -32,7 +32,10 @@ class RubikaAPI {
         try {
             $options = [];
             if (!empty($data)) {
-                $options['json'] = $data;
+                // ensure values are valid UTF-8 and encode with UTF-8 options
+                $json = $this->safeJsonEncode($data);
+                $options['body'] = $json;
+                $options['headers'] = ['Content-Type' => 'application/json'];
             }
 
             $response = $this->client->post($method, $options);
@@ -53,6 +56,29 @@ class RubikaAPI {
         } catch (RequestException $e) {
             throw new RubikaNetworkError("Network error: " . $e->getMessage());
         }
+    }
+
+    private function safeJsonEncode($data): string {
+        $normalize = function (&$value) use (&$normalize) {
+            if (is_string($value)) {
+                // convert to valid UTF-8, stripping invalid sequences
+                if (!mb_check_encoding($value, 'UTF-8')) {
+                    $value = mb_convert_encoding($value, 'UTF-8', 'Windows-1252');
+                }
+                $value = iconv('UTF-8', 'UTF-8//IGNORE', $value);
+            } elseif (is_array($value)) {
+                foreach ($value as &$v) $normalize($v);
+                unset($v);
+            }
+        };
+
+        $normalize($data);
+
+        $json = json_encode($data, JSON_UNESCAPED_UNICODE);
+        if ($json === false) {
+            throw new \RuntimeException('json_encode error: ' . json_last_error_msg());
+        }
+        return $json;
     }
 
     public function uploadFileToUrl(string $url, string $file_path): string {

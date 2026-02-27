@@ -3,7 +3,7 @@
         'name' => 'rubikaphp/lib',
         'pretty_version' => 'dev-main',
         'version' => 'dev-main',
-        'reference' => 'c52890687f835ac568e9fda45220a48e4b12abbb',
+        'reference' => 'b34209a852770d4abb6c3488c0f271d67bfb7966',
         'type' => 'library',
         'install_path' => __DIR__ . '/../../',
         'aliases' => array(),
@@ -193,7 +193,7 @@
         'rubikaphp/lib' => array(
             'pretty_version' => 'dev-main',
             'version' => 'dev-main',
-            'reference' => 'c52890687f835ac568e9fda45220a48e4b12abbb',
+            'reference' => 'b34209a852770d4abb6c3488c0f271d67bfb7966',
             'type' => 'library',
             'install_path' => __DIR__ . '/../../',
             'aliases' => array(),

@@ -620,6 +620,8 @@ class Update extends Parameters {
             $params['metadata'] = $metadata_to_send;
         }
 
+        $this->parseMode = null;
+        
         return $params;
     }
 

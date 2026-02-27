@@ -126,8 +126,17 @@ class Markdown
                 $group = $match[0];
                 $start = $match[1];
                 $end = $start + strlen($group);
-                $adjusted_start = $utf16_prefix[$start] - $offset;
-                $adjusted_char_start = $start - $char_offset;
+
+                // Convert byte offsets (from preg_offset_capture) to character indexes
+                $char_start = mb_strlen(substr($text, 0, $start), 'UTF-8');
+                $char_end = mb_strlen(substr($text, 0, $end), 'UTF-8');
+
+                // Guard indexes exist in prefix array
+                $utf16_start = $utf16_prefix[$char_start] ?? 0;
+                $utf16_end = $utf16_prefix[$char_end] ?? $utf16_start;
+
+                $adjusted_start = $utf16_start - $offset;
+                $adjusted_char_start = $char_start - $char_offset;
 
                 foreach ($this->MARKDOWN_TYPES as $prefix => $type_info) {
                     list($md_type, $group_idx) = $type_info;
@@ -175,7 +184,8 @@ class Markdown
                             $meta_data_part['language'] = trim($lines[0] ?? '');
                         } elseif ($md_type === "Link") {
                             $url = isset($matches[9][$index][0]) ? $matches[9][$index][0] : '';
-                            $mention_type = $this->MENTION_PREFIX_TYPES[$url[0]] ?? 'hyperlink';
+                            $firstChar = mb_substr($url, 0, 1, 'UTF-8');
+                            $mention_type = $this->MENTION_PREFIX_TYPES[$firstChar] ?? 'hyperlink';
 
                             if ($mention_type === 'hyperlink') {
                                 $meta_data_part['link_url'] = $url;
@@ -190,10 +200,13 @@ class Markdown
 
                         $meta_data_parts[] = $meta_data_part;
 
-                        $markup_length = $utf16_prefix[$end] - $utf16_prefix[$start];
-                        $char_markup_length = $end - $start;
+                        $markup_length = $utf16_end - $utf16_start;
+                        $char_markup_length = $char_end - $char_start;
 
-                        $current_text = substr_replace($current_text, $content, $adjusted_char_start, $char_markup_length);
+                        $current_text = mb_substr($current_text, 0, $adjusted_char_start, 'UTF-8')
+                            . $content
+                            . mb_substr($current_text, $adjusted_char_start + $char_markup_length, null, 'UTF-8');
+
                         $offset += $markup_length - $content_length;
                         $char_offset += $char_markup_length - $char_content_length;
 
@@ -211,13 +224,3 @@ class Markdown
         return $result;
     }
 }
-
-$md = new Markdown();
-
-$html = "<b>Bold</b> and <i>Italic</i> text with a <a href='https://example.com'>link</a> and a <pre>PHP Code</pre>";
-$markdown = $md->htmlToMarkdown($html);
-$metadata = $md->toMetadata($markdown);
-
-echo "Markdown:\n$markdown\n\n";
-echo "Metadata:\n";
-print_r($metadata);
