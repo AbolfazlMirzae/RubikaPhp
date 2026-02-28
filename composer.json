@@ -13,7 +13,8 @@
         "php": ">=8.0",
         "ext-curl": "*",
         "ext-json": "*",
-        "guzzlehttp/guzzle": "^7.0"
+        "guzzlehttp/guzzle": "^7.0",
+        "league/html-to-markdown": "^5.1"
     },
     "require-dev": {
         "phpunit/phpunit": "^9.0"

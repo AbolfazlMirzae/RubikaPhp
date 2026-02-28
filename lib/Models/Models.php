@@ -50,7 +50,7 @@ class Parameters {
     }
     
     public function text(string $text): static {
-        $this->text = $text;
+        $this->text = trim($text);
         return $this;
     }
 
@@ -435,6 +435,15 @@ class Keypad {
     }
 }
 
+class MetaData {
+    public ?array $meta_data_parts;
+
+    public function __construct(?array $meta_data_parts = null)
+    {
+        $this-> meta_data_parts = $meta_data_parts;
+    }
+}
+
 class Message {
     public string $message_id;
     public ?string $text;
@@ -452,6 +461,7 @@ class Message {
     public ?LiveLocation $live_location;
     public ?string $forwarded_no_link;
     public ?ForwardedFrom $forwarded_from;
+    public ?MetaData $metadata;
 
     public function __construct(
         string $message_id,
@@ -470,6 +480,7 @@ class Message {
         ?LiveLocation $live_location = null,
         ?string $forwarded_no_link = null,
         ?ForwardedFrom $forwarded_from = null,
+        ?MetaData $metadata = null
     ) {
         $this->message_id = $message_id;
         $this->text = $text;
@@ -487,6 +498,7 @@ class Message {
         $this->live_location = $live_location;
         $this->forwarded_no_link = $forwarded_no_link;
         $this->forwarded_from = $forwarded_from;
+        $this->metadata = $metadata;
     }
 
     public static function fromArray(array $data): Message {
@@ -507,6 +519,7 @@ class Message {
             isset($data["live_location"]) ? new LiveLocation(...$data["live_location"]) : null,
             $data["forwarded_no_link"] ?? null,
             isset($data["forwarded_from"]) ? new ForwardedFrom(...$data["forwarded_from"]) : null,
+            isset($data["metadata"]) ? new MetaData(...$data["metadata"]) : null,
         );
     }
 }
@@ -548,6 +561,7 @@ class InlineMessage {
 }
 
 class Update extends Parameters {
+    public array $data;
     public ?UpdateTypeEnum $type;
     public ?string $chat_id;
     public ?Message $new_message;
@@ -558,6 +572,7 @@ class Update extends Parameters {
     public Bot $bot;
 
     public function __construct(
+        array $data = [],
         ?UpdateTypeEnum $type = null,
         ?string $chat_id = null,
         ?Message $new_message = null,
@@ -566,6 +581,7 @@ class Update extends Parameters {
         ?string $removed_message_id = null,
         mixed $updated_payment = null
     ) {
+        $this->data = $data;
         $this->type = $type;
         $this->chat_id = $chat_id;
         $this->new_message = $new_message;
@@ -584,6 +600,7 @@ class Update extends Parameters {
             $message = Message::fromArray($data["new_message"]);
         }
         return new Update(
+            $data,
             UpdateTypeEnum::from($data["type"] ?? null),
             $data["chat_id"] ?? $data["inline_message"]["chat_id"] ?? null,
             $message,
@@ -604,14 +621,14 @@ class Update extends Parameters {
             $md = $mark->toMetadata($text);
             $text_to_send = $md['text'] ?? $text;
             if (isset($md['metadata'])) $metadata_to_send = $md['metadata'];
-        }
-        if ($this->parse_mode && strtolower($this->parse_mode) === 'htmlmarkup' && $text) {
+        } elseif ($this->parse_mode && strtolower($this->parse_mode) === 'html' && $text) {
             $mark = new Markdown();
-            $markd = $mark->htmlToMarkdown($text);
-            $md = $mark->toMetadata($markd);
+            $m = $mark->toMarkdown($text);
+            $md = $mark->toMetadata($m);
             $text_to_send = $md['text'] ?? $text;
             if (isset($md['metadata'])) $metadata_to_send = $md['metadata'];
-        }
+        } 
+        
         if ($text_to_send !== null) $params['text'] = $text_to_send;
 
         if ($this->metadata !== null) {
@@ -620,7 +637,7 @@ class Update extends Parameters {
             $params['metadata'] = $metadata_to_send;
         }
 
-        $this->parseMode = null;
+        $this->parse_mode = null;
         
         return $params;
     }

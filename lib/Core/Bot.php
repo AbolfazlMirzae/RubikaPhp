@@ -111,14 +111,14 @@ class Bot extends Parameters
             $md = $mark->toMetadata($text);
             $text_to_send = $md['text'] ?? $text;
             if (isset($md['metadata'])) $metadata_to_send = $md['metadata'];
-        }
-        if ($this->parse_mode && strtolower($this->parse_mode) === 'htmlmarkup' && $text) {
+        } elseif ($this->parse_mode && strtolower($this->parse_mode) === 'html' && $text) {
             $mark = new Markdown();
-            $markd = $mark->htmlToMarkdown($text);
-            $md = $mark->toMetadata($markd);
+            $m = $mark->toMarkdown($text);
+            $md = $mark->toMetadata($m);
             $text_to_send = $md['text'] ?? $text;
             if (isset($md['metadata'])) $metadata_to_send = $md['metadata'];
-        }
+        } 
+
         if ($text_to_send !== null) $params['text'] = $text_to_send;
 
         if ($this->metadata !== null) {
@@ -375,4 +375,58 @@ class Bot extends Parameters
             'user_id' => $userId
         ]);
     }
+    /*
+    public function pinMessage(): array {
+        if (!$this->chatId || !$this->message_id)
+            throw new \InvalidArgumentException('chat_id or message_id not a set');
+
+        $params = [
+            'chat_id' => $this->chatId,
+            'message_id' => $this->message_id,
+            'disable_notification' => $this->disable_notification ?? false
+        ];
+
+        return $this->api->request('pinChatMessage', $params);
+    }
+
+    public function unpinMessage(): array {
+        if (!$this->chatId || !$this->message_id)
+            throw new \InvalidArgumentException('chat_id or message_id not a set');
+
+        $params = [
+            'chat_id' => $this->chatId,
+            'message_id' => $this->message_id
+        ];
+
+        return $this->api->request('unpinChatMessage', $params);
+    }
+
+    public function unpinAllMessages(): array {
+        if (!$this->chatId || !$this->message_id)
+            throw new \InvalidArgumentException('chat_id or message_id not a set');
+
+        $params = [
+            'chat_id' => $this->chatId,
+            'message_id' => $this->message_id
+        ];
+
+        return $this->api->request('unpinAllChatMessages', $params);
+    }
+
+    public function getChatAdministrators(string $chat_id): array {
+        return $this->api->request('getChatAdministrators', ['chat_id' => $chat_id]);
+    }
+
+    public function getChatMember(): array {
+        if (!$this->chatId || !$this->user_id)
+            throw new \InvalidArgumentException('chat_id or user_id not a set');
+
+        $params = [
+            'chat_id' => $this->chatId,
+            'user_id' => $this->user_id
+        ];
+
+        return $this->api->request('getChatMember', $params);
+    }
+    */
 }

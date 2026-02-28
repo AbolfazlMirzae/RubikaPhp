@@ -26,6 +26,10 @@ class ComposerStaticInit774a736050a8c6236ff6871da4a77be9
             'Psr\\Http\\Client\\' => 16,
             'PhpParser\\' => 10,
         ),
+        'L' => 
+        array (
+            'League\\HTMLToMarkdown\\' => 22,
+        ),
         'G' => 
         array (
             'GuzzleHttp\\Psr7\\' => 16,
@@ -60,6 +64,10 @@ class ComposerStaticInit774a736050a8c6236ff6871da4a77be9
         'PhpParser\\' => 
         array (
             0 => __DIR__ . '/..' . '/nikic/php-parser/lib/PhpParser',
+        ),
+        'League\\HTMLToMarkdown\\' => 
+        array (
+            0 => __DIR__ . '/..' . '/league/html-to-markdown/src',
         ),
         'GuzzleHttp\\Psr7\\' => 
         array (
@@ -553,6 +561,7 @@ class ComposerStaticInit774a736050a8c6236ff6871da4a77be9
         'RubikaPhp\\Models\\Message' => __DIR__ . '/../..' . '/lib/Models/Models.php',
         'RubikaPhp\\Models\\MessageKeypadUpdate' => __DIR__ . '/../..' . '/lib/Models/Models.php',
         'RubikaPhp\\Models\\MessageTextUpdate' => __DIR__ . '/../..' . '/lib/Models/Models.php',
+        'RubikaPhp\\Models\\MetaData' => __DIR__ . '/../..' . '/lib/Models/Models.php',
         'RubikaPhp\\Models\\Parameters' => __DIR__ . '/../..' . '/lib/Models/Models.php',
         'RubikaPhp\\Models\\Poll' => __DIR__ . '/../..' . '/lib/Models/Models.php',
         'RubikaPhp\\Models\\PollStatus' => __DIR__ . '/../..' . '/lib/Models/Models.php',

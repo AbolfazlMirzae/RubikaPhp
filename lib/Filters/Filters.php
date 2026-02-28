@@ -120,6 +120,151 @@ class Filters {
         return new Filters(fn(Update $update) => preg_match($pattern, $update->new_message?->text ?? "") === 1);
     }
 
+    private static function regex_metadata() {
+        return function(Update $up) {
+            $types = [];
+            if (isset($up->new_message) && isset($up->new_message->metadata->meta_data_parts)) {
+                foreach ($up->new_message->metadata->meta_data_parts as $part) {
+                    if (isset($part['type'])) {
+                        $types[] = $part['type'];
+                    }
+                }
+                return $types;
+            }
+            return false;
+        };
+    }
+
+    public static function isQuote() {
+        return new Filters(function(Update $up) {
+            $callback = self::regex_metadata();
+            $types = $callback($up);
+            if (!$types) return false;
+
+            foreach ($types as $type) {
+                if ($type == 'Quote') return true;
+            }
+            return false;
+        });
+    }
+
+    public static function isCode() {
+        return new Filters(function(Update $up) {
+            $callback = self::regex_metadata();
+            $types = $callback($up);
+            if (!$types) return false;
+
+            foreach ($types as $type) {
+                if ($type == 'Pre') return true;
+            }
+            return false;
+        });
+    }
+
+    public static function isBold() {
+        return new Filters(function(Update $up) {
+            $callback = self::regex_metadata();
+            $types = $callback($up);
+            if (!$types) return false;
+
+            foreach ($types as $type) {
+                if ($type == 'Bold') return true;
+            }
+            return false;
+        });
+    }
+
+    public static function isMono() {
+        return new Filters(function(Update $up) {
+            $callback = self::regex_metadata();
+            $types = $callback($up);
+            if (!$types) return false;
+
+            foreach ($types as $type) {
+                if ($type == 'Mono') return true;
+            }
+            return false;
+        });
+    }
+
+    public static function isItalic() {
+        return new Filters(function(Update $up) {
+            $callback = self::regex_metadata();
+            $types = $callback($up);
+            if (!$types) return false;
+
+            foreach ($types as $type) {
+                if ($type == 'Italic') return true;
+            }
+            return false;
+        });
+    }
+
+    public static function isUnderline() {
+        return new Filters(function(Update $up) {
+            $callback = self::regex_metadata();
+            $types = $callback($up);
+            if (!$types) return false;
+
+            foreach ($types as $type) {
+                if ($type == 'Underline') return true;
+            }
+            return false;
+        });
+    }
+
+    public static function isStrike() {
+        return new Filters(function(Update $up) {
+            $callback = self::regex_metadata();
+            $types = $callback($up);
+            if (!$types) return false;
+
+            foreach ($types as $type) {
+                if ($type == 'Strike') return true;
+            }
+            return false;
+        });
+    }
+
+    public static function isSpoiler() {
+        return new Filters(function(Update $up) {
+            $callback = self::regex_metadata();
+            $types = $callback($up);
+            if (!$types) return false;
+
+            foreach ($types as $type) {
+                if ($type == 'Spoiler') return true;
+            }
+            return false;
+        });
+    }
+
+    public static function isLink() {
+        return new Filters(function(Update $up) {
+            $callback = self::regex_metadata();
+            $types = $callback($up);
+            if (!$types) return false;
+
+            foreach ($types as $type) {
+                if ($type == 'Link') return true;
+            }
+            return false;
+        });
+    }
+
+    public static function isMention() {
+        return new Filters(function(Update $up) {
+            $callback = self::regex_metadata();
+            $types = $callback($up);
+            if (!$types) return false;
+
+            foreach ($types as $type) {
+                if ($type == 'MentionText') return true;
+            }
+            return false;
+        });
+    }
+
     public static function length(int $min, ?int $max = null): Filters {
         return new Filters(fn(Update $update) => 
             ($len = strlen($update->new_message?->text ?? "")) >= $min &&

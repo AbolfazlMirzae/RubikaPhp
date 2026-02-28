@@ -475,6 +475,7 @@ return array(
     'RubikaPhp\\Models\\Message' => $baseDir . '/lib/Models/Models.php',
     'RubikaPhp\\Models\\MessageKeypadUpdate' => $baseDir . '/lib/Models/Models.php',
     'RubikaPhp\\Models\\MessageTextUpdate' => $baseDir . '/lib/Models/Models.php',
+    'RubikaPhp\\Models\\MetaData' => $baseDir . '/lib/Models/Models.php',
     'RubikaPhp\\Models\\Parameters' => $baseDir . '/lib/Models/Models.php',
     'RubikaPhp\\Models\\Poll' => $baseDir . '/lib/Models/Models.php',
     'RubikaPhp\\Models\\PollStatus' => $baseDir . '/lib/Models/Models.php',

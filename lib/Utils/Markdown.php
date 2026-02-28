@@ -2,6 +2,8 @@
 
 namespace RubikaPhp\Utils;
 
+use League\HTMLToMarkdown\HtmlConverter;
+
 class Markdown
 {
     private $MARKDOWN_RE = '/(?:^(?:> ?[^\n]*\n?)+)|```([\s\S]*?)```|\*\*([^\n*]+?)\*\*|`([^\n`]+?)`|__([^\n_]+?)__|--([^\n-]+?)--|~~([^\n~]+?)~~|\|\|([^\n|]+?)\|\||\[([^\]]+?)\]\((\S+)\)/m';
@@ -25,70 +27,10 @@ class Markdown
         "b" => "Bot"
     ];
 
-    public function htmlToMarkdown(string $html): string
+    public function toMarkdown(string $html): string
     {
-        $doc = new \DOMDocument();
-        libxml_use_internal_errors(true);
-        $doc->loadHTML('<?xml encoding="UTF-8">' . $html);
-        libxml_clear_errors();
-        $body = $doc->getElementsByTagName('body')->item(0);
-        return $this->nodeToMarkdown($body);
-    }
-
-    private function nodeToMarkdown($node): string
-    {
-        $markdown = '';
-
-        foreach ($node->childNodes as $child) {
-            if ($child->nodeType === XML_TEXT_NODE) {
-                $markdown .= $child->nodeValue;
-            } elseif ($child->nodeType === XML_ELEMENT_NODE) {
-                $tag = strtolower($child->nodeName);
-                $inner = $this->nodeToMarkdown($child);
-
-                switch ($tag) {
-                    case 'b':
-                    case 'strong':
-                        $markdown .= "**{$inner}**";
-                        break;
-                    case 'i':
-                    case 'em':
-                        $markdown .= "__{$inner}__";
-                        break;
-                    case 'u':
-                        $markdown .= "--{$inner}--";
-                        break;
-                    case 's':
-                    case 'strike':
-                        $markdown .= "~~{$inner}~~";
-                        break;
-                    case 'code':
-                        $markdown .= "`{$inner}`";
-                        break;
-                    case 'pre':
-                        $markdown .= "```\n{$inner}\n```";
-                        break;
-                    case 'blockquote':
-                        $lines = explode("\n", $inner);
-                        foreach ($lines as &$line) {
-                            $line = "> " . $line;
-                        }
-                        $markdown .= implode("\n", $lines);
-                        break;
-                    case 'a':
-                        $href = $child->getAttribute('href');
-                        $markdown .= "[{$inner}]({$href})";
-                        break;
-                    case 'span':
-                    case 'div':
-                    default:
-                        $markdown .= $inner;
-                        break;
-                }
-            }
-        }
-
-        return $markdown;
+        $converter = new HtmlConverter();
+        return trim($converter->convert($html));
     }
 
     private function buildUtf16PrefixLengths(string $text): array
@@ -127,11 +69,9 @@ class Markdown
                 $start = $match[1];
                 $end = $start + strlen($group);
 
-                // Convert byte offsets (from preg_offset_capture) to character indexes
                 $char_start = mb_strlen(substr($text, 0, $start), 'UTF-8');
                 $char_end = mb_strlen(substr($text, 0, $end), 'UTF-8');
 
-                // Guard indexes exist in prefix array
                 $utf16_start = $utf16_prefix[$char_start] ?? 0;
                 $utf16_end = $utf16_prefix[$char_end] ?? $utf16_start;
 
