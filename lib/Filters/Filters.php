@@ -108,6 +108,18 @@ class Filters {
         return new Filters(fn(Update $update) => $update->new_message?->sender_type === MessageSenderEnum::BOT);
     }
 
+    public static function isUser(): Filters {
+        return new Filters(fn(Update $update) => str_starts_with($update->chat_id, 'b'));
+    }
+
+    public static function isGroup(): Filters {
+        return new Filters(fn(Update $update) => str_starts_with($update->chat_id, 'g'));
+    }
+
+    public static function isChannel(): Filters {
+        return new Filters(fn(Update $update) => str_starts_with($update->chat_id, 'c'));
+    }
+
     public static function senderType(MessageSenderEnum $type): Filters {
         return new Filters(fn(Update $update) => $update->new_message?->sender_type === $type);
     }
